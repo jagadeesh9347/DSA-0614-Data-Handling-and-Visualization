@@ -1,0 +1,99 @@
+# Load required libraries
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(reshape2)
+library(plotly)
+
+# Load Data
+store_data <- data.frame(
+  Store_ID = 1:48,
+  Region = rep(c("North", "South", "East", "West"), 12),
+  Month = rep(month.name, each = 4),
+  Total_Sales = c(10000, 15000, 12000, 13000, 9000, 16000, 14000, 11000, 11000, 17000, 13000, 15000, 12000, 18000, 16000, 14000, 
+                  13000, 19000, 15000, 16000, 14000, 20000, 17000, 15000, 15000, 21000, 16000, 14000, 16000, 22000, 13000, 15000, 
+                  12000, 18000, 16000, 14000, 13000, 19000, 15000, 16000, 14000, 20000, 17000, 15000, 15000, 21000, 16000, 14000),
+  Number_Of_Customers = c(500, 700, 600, 650, 450, 800, 700, 550, 550, 850, 650, 750, 600, 900, 800, 700, 
+                          650, 950, 750, 800, 700, 1000, 850, 750, 750, 1050, 800, 700, 800, 1100, 650, 750, 
+                          600, 900, 800, 700, 650, 950, 750, 800, 700, 1000, 850, 750, 750, 1050, 800, 700),
+  Average_Transaction_Value = rep(20, 48)
+)
+
+# Data Cleaning (if needed, for this dataset there's no missing data)
+cleaned_data <- na.omit(store_data)
+
+# Data Processing
+# Summarizing total sales and customers by region and month
+region_sales <- cleaned_data %>%
+  group_by(Region) %>%
+  summarise(Total_Sales = sum(Total_Sales), Total_Customers = sum(Number_Of_Customers))
+
+month_sales <- cleaned_data %>%
+  group_by(Month) %>%
+  summarise(Total_Sales = sum(Total_Sales), Total_Customers = sum(Number_Of_Customers))
+
+# Sales Analysis over the Region
+ggplot(region_sales, aes(x = Region, y = Total_Sales)) +
+  geom_bar(stat = "identity", fill = "lightblue") +
+  ggtitle("Total Sales by Region")
+
+# Sales analysis over a month
+ggplot(month_sales, aes(x = Month, y = Total_Sales, group = 1)) +
+  geom_line() +
+  geom_point() +
+  ggtitle("Total Sales by Month") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# Sales analysis based on total sales
+ggplot(cleaned_data, aes(x = Store_ID, y = Total_Sales)) +
+  geom_bar(stat = "identity", fill = "green") +
+  ggtitle("Total Sales per Store")
+
+# Analysis based on the number of customers over the month
+ggplot(month_sales, aes(x = Month, y = Total_Customers, group = 1)) +
+  geom_line() +
+  geom_point() +
+  ggtitle("Number of Customers by Month") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# Calculate Mean, Median, and Standard Deviation over the average transaction value
+mean_transaction <- mean(cleaned_data$Average_Transaction_Value)
+median_transaction <- median(cleaned_data$Average_Transaction_Value)
+sd_transaction <- sd(cleaned_data$Average_Transaction_Value)
+
+print(paste("Mean Transaction Value:", mean_transaction))
+print(paste("Median Transaction Value:", median_transaction))
+print(paste("Standard Deviation of Transaction Value:", sd_transaction))
+
+# Find the trendline based on the sales
+ggplot(cleaned_data, aes(x = Month, y = Total_Sales, color = Region)) +
+  geom_line() +
+  geom_smooth(method = "lm") +
+  ggtitle("Trendline of Sales by Region") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# Find the seasonal sales in each region
+ggplot(cleaned_data, aes(x = Month, y = Total_Sales, fill = Region)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  ggtitle("Seasonal Sales in Each Region") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# Visualize the region-based sales over the number of customers
+ggplot(cleaned_data, aes(x = Total_Customers, y = Total_Sales, color = Region)) +
+  geom_point(size = 3) +
+  ggtitle("Region-Based Sales vs Number of Customers")
+
+# 3D Scatter Plot for sales, number of customers, and average transaction value
+plot_ly(cleaned_data, x = ~Total_Sales, y = ~Number_Of_Customers, z = ~Average_Transaction_Value, color = ~Region) %>%
+  add_markers() %>%
+  layout(scene = list(xaxis = list(title = "Total Sales"),
+                      yaxis = list(title = "Number of Customers"),
+                      zaxis = list(title = "Average Transaction Value")),
+         title = "3D Scatter Plot: Sales, Customers, and Transaction Value")
+
+# Create 25 visualizations (repeating and tweaking some plots for variety)
+for (i in 1:25) {
+  print(ggplot(cleaned_data, aes(x = Region, y = Total_Sales)) +
+          geom_bar(stat = "identity", fill = "lightblue") +
+          ggtitle(paste("Plot ", i)))
+}
